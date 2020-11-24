@@ -1,9 +1,9 @@
-{{>header}}
+/* istanbul ignore file */
+/* tslint:disable */
+/* eslint-disable */
 
 
-{{#equals @root.httpClient 'fetch'}}{{>fetch/responseType}}{{/equals}}
-{{#equals @root.httpClient 'xhr'}}{{>xhr/responseType}}{{/equals}}
-{{#equals @root.httpClient 'node'}}{{>node/responseType}}{{/equals}}
+import { Response as ResponseImplementation } from 'node-fetch';
 
 type Resolver<T> = () => Promise<T>;
 type Headers = Record<string, string>;
@@ -35,8 +35,8 @@ type Config = {
 }
 
 export const OpenAPI: Config = {
-    BASE: '{{{server}}}',
-    VERSION: '{{{version}}}',
+    BASE: 'http://localhost:8081',
+    VERSION: '0.1',
     WITH_CREDENTIALS: false,
     TOKEN: undefined,
     USERNAME: undefined,
