@@ -1,1 +1,1 @@
-({{#each properties}}{{>type}}{{#unless @last}} | {{/unless}}{{/each}}){{>isNullable}}
+({{#union properties parent}}{{this}}{{/union}}){{>isNullable}}

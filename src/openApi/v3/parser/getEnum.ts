@@ -1,5 +1,5 @@
 import type { Enum } from '../../../client/interfaces/Enum';
-import { isDefined } from './isDefined';
+import { isDefined } from '../../../utils/isDefined';
 
 export function getEnum(values?: (string | number)[]): Enum[] {
     if (Array.isArray(values)) {
@@ -18,7 +18,7 @@ export function getEnum(values?: (string | number)[]): Enum[] {
                     };
                 }
                 return {
-                    name: value
+                    name: String(value)
                         .replace(/\W+/g, '_')
                         .replace(/^(\d+)/g, '_$1')
                         .replace(/([a-z])([A-Z]+)/g, '$1_$2')

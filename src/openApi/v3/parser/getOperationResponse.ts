@@ -1,10 +1,10 @@
 import type { OperationResponse } from '../../../client/interfaces/OperationResponse';
+import { getPattern } from '../../../utils/getPattern';
 import type { OpenApi } from '../interfaces/OpenApi';
 import type { OpenApiResponse } from '../interfaces/OpenApiResponse';
 import { getComment } from './getComment';
 import { getContent } from './getContent';
 import { getModel } from './getModel';
-import { getPattern } from './getPattern';
 import { getType } from './getType';
 
 export function getOperationResponse(openApi: OpenApi, response: OpenApiResponse, responseCode: number): OperationResponse {
@@ -27,20 +27,6 @@ export function getOperationResponse(openApi: OpenApi, response: OpenApiResponse
         enums: [],
         properties: [],
     };
-
-    // We support basic properties from response headers, since both
-    // fetch and XHR client just support string types.
-    if (response.headers) {
-        for (const name in response.headers) {
-            if (response.headers.hasOwnProperty(name)) {
-                operationResponse.in = 'header';
-                operationResponse.name = name;
-                operationResponse.type = 'string';
-                operationResponse.base = 'string';
-                return operationResponse;
-            }
-        }
-    }
 
     if (response.content) {
         const schema = getContent(openApi, response.content);
@@ -81,6 +67,20 @@ export function getOperationResponse(openApi: OpenApi, response: OpenApiResponse
                 operationResponse.enum.push(...model.enum);
                 operationResponse.enums.push(...model.enums);
                 operationResponse.properties.push(...model.properties);
+                return operationResponse;
+            }
+        }
+    }
+
+    // We support basic properties from response headers, since both
+    // fetch and XHR client just support string types.
+    if (response.headers) {
+        for (const name in response.headers) {
+            if (response.headers.hasOwnProperty(name)) {
+                operationResponse.in = 'header';
+                operationResponse.name = name;
+                operationResponse.type = 'string';
+                operationResponse.base = 'string';
                 return operationResponse;
             }
         }

@@ -1,4 +1,5 @@
 import type { Model } from '../../../client/interfaces/Model';
+import { getPattern } from '../../../utils/getPattern';
 import type { OpenApi } from '../interfaces/OpenApi';
 import type { OpenApiSchema } from '../interfaces/OpenApiSchema';
 import { extendEnum } from './extendEnum';
@@ -7,7 +8,6 @@ import { getEnum } from './getEnum';
 import { getEnumFromDescription } from './getEnumFromDescription';
 import { getModelComposition } from './getModelComposition';
 import { getModelProperties } from './getModelProperties';
-import { getPattern } from './getPattern';
 import { getType } from './getType';
 
 export function getModel(openApi: OpenApi, definition: OpenApiSchema, isDefinition: boolean = false, name: string = ''): Model {
@@ -53,7 +53,7 @@ export function getModel(openApi: OpenApi, definition: OpenApiSchema, isDefiniti
         return model;
     }
 
-    if (definition.enum) {
+    if (definition.enum && definition.type !== 'boolean') {
         const enumerators = getEnum(definition.enum);
         const extendedEnumerators = extendEnum(enumerators, definition);
         if (extendedEnumerators.length) {
@@ -119,11 +119,11 @@ export function getModel(openApi: OpenApi, definition: OpenApiSchema, isDefiniti
     }
 
     if (definition.allOf?.length) {
-        const composition = getModelComposition(openApi, definition.allOf, 'all-of', getModel);
+        const composition = getModelComposition(openApi, definition, definition.allOf, 'all-of', getModel);
         model.export = composition.type;
         model.imports.push(...composition.imports);
-        model.enums.push(...composition.enums);
         model.properties.push(...composition.properties);
+        model.enums.push(...composition.enums);
         return model;
     }
 
@@ -136,6 +136,7 @@ export function getModel(openApi: OpenApi, definition: OpenApiSchema, isDefiniti
             const properties = getModelProperties(openApi, definition, getModel);
             properties.forEach(property => {
                 model.imports.push(...property.imports);
+                model.enums.push(...property.enums);
                 model.properties.push(property);
                 if (property.export === 'enum') {
                     model.enums.push(property);

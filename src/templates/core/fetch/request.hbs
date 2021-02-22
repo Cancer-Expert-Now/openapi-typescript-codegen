@@ -50,15 +50,15 @@ import { OpenAPI } from './OpenAPI';
 /**
  * Request using fetch client
  * @param options The request options from the the service
- * @result ApiResult
+ * @returns ApiResult
  * @throws ApiError
  */
-export async function request(options: ApiRequestOptions): Promise<ApiResult> {
+export async function request(options: ApiRequestOptions, context?: any): Promise<ApiResult> {
     const url = getUrl(options);
 
     // Pre-hook on request if a function is provided.
     const requestHookResult = OpenAPI.REQUEST_HOOK ?
-        (await OpenAPI.REQUEST_HOOK({ url, options})) : { url, options };
+        (await OpenAPI.REQUEST_HOOK({ url, options, context })) : { url, options };
 
 
     const response = await sendRequest(requestHookResult.options, requestHookResult.url);
@@ -75,7 +75,7 @@ export async function request(options: ApiRequestOptions): Promise<ApiResult> {
     };
 
     // Post-request Hook if provided
-    result =  OpenAPI.RESPONSE_HOOK ? await OpenAPI.RESPONSE_HOOK({url, result, response}) : result;
+    result =  OpenAPI.RESPONSE_HOOK ? await OpenAPI.RESPONSE_HOOK({url, result, response, context }) : result;
 
     catchErrors(options, result);
 

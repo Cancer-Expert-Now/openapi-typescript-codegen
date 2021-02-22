@@ -31,11 +31,11 @@ export class {{{name}}} {
     {{/if}}
     {{/unless}}
     {{#each results}}
-     * @result {{{type}}} {{{description}}}
+     * @returns {{{type}}} {{{description}}}
     {{/each}}
      * @throws ApiError
      */
-    public static async {{{name}}}({{>parameters}}): Promise<{{>result}}> {
+    public static async {{{name}}}({{>parameters}}{{#if @root.useOptions}}{{#if parameters}}, {{/if}}{{/if}}context?: any): Promise<{{>result}}> {
         const result = await __request({
             method: '{{{method}}}',
             path: `{{{path}}}`,
@@ -80,7 +80,7 @@ export class {{{name}}} {
                 {{/each}}
             },
             {{/if}}
-        });
+        }, context);
         return result.body;
     }
 

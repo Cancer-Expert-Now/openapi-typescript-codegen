@@ -1,5 +1,6 @@
-import * as yaml from 'js-yaml';
-import * as path from 'path';
+import { load } from 'js-yaml';
+import RefParser from 'json-schema-ref-parser';
+import { extname } from 'path';
 
 import { readSpec } from './readSpec';
 
@@ -10,22 +11,26 @@ import { readSpec } from './readSpec';
  * @param input
  */
 export async function getOpenApiSpec(input: string): Promise<any> {
-    const extension = path.extname(input).toLowerCase();
+    const extension = extname(input).toLowerCase();
     const content = await readSpec(input);
+    let rootObject: any;
     switch (extension) {
         case '.yml':
         case '.yaml':
             try {
-                return yaml.safeLoad(content);
+                rootObject = load(content);
             } catch (e) {
                 throw new Error(`Could not parse OpenApi YAML: "${input}"`);
             }
+            break;
 
         default:
             try {
-                return JSON.parse(content);
+                rootObject = JSON.parse(content);
             } catch (e) {
                 throw new Error(`Could not parse OpenApi JSON: "${input}"`);
             }
+            break;
     }
+    return await RefParser.bundle(rootObject);
 }

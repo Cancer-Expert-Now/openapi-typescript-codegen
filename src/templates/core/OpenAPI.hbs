@@ -14,12 +14,14 @@ import { ApiRequestOptions } from './ApiRequestOptions';
 export interface RequestHookParams {
     url: string;
     options: ApiRequestOptions;
+    context?: any;
 }
 
 export interface ResponseHookParams {
     url: string;
     result: ApiResult;
     response?: ResponseImplementation;
+    context?: any;
 }
 
 type Config = {
