@@ -9,9 +9,7 @@ export { OpenAPI } from './core/OpenAPI';
 
 {{#each models}}
 {{#if enum}}
-// Condition 1
-export type { {{{name}}} } from './models/{{{name}}}';
-export { {{{name}}}Enums } from './models/{{{name}}}';
+export { {{{name}}} } from './models/{{{name}}}';
 {{else if @root.useUnionTypes}}
 export type { {{{name}}} } from './models/{{{name}}}';
 {{else if enums}}
