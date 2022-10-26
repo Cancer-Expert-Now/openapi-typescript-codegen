@@ -8,9 +8,12 @@ import type { {{{this}}} } from './{{{this}}}';
 {{/if}}
 
 {{#equals export 'interface'}}
+// interface
 {{>exportInterface}}
 {{else equals export 'enum'}}
+// enum
 {{>exportEnum}}
 {{else}}
+// type
 {{>exportType}}
 {{/equals}}

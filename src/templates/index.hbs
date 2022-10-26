@@ -17,7 +17,9 @@ export type { {{{name}}} } from './models/{{{name}}}';
 {{else if enums}}
 // Condition 2
 export { {{{name}}}Enums } from './models/{{{name}}}';
+{{#unless @root.useUnionTypes}}
 export type { {{{name}}} } from './models/{{{name}}}';
+{{/unless}}
 {{else}}
 export type { {{{name}}} } from './models/{{{name}}}';
 {{/if}}
