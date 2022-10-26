@@ -16,10 +16,10 @@ export { {{{name}}}Enums } from './models/{{{name}}}';
 export type { {{{name}}} } from './models/{{{name}}}';
 {{else if enums}}
 // Condition 2
-export { {{{name}}}Enums } from './models/{{{name}}}';
+export type { {{{name}}} } from './models/{{{name}}}';
 {{#equals export 'interface'}}
 {{#unless @root.useUnionTypes}}
-export type { {{{name}}} } from './models/{{{name}}}';
+export { {{{name}}}Enums } from './models/{{{name}}}';
 {{/unless}}
 {{/equals}}
 {{else}}
