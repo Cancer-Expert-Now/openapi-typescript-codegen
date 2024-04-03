@@ -1,26 +1,43 @@
-import * as Handlebars from 'handlebars/runtime';
+import Handlebars from 'handlebars/runtime';
 
+import { HttpClient } from '../HttpClient';
+import templateClient from '../templates/client.hbs';
+import angularGetHeaders from '../templates/core/angular/getHeaders.hbs';
+import angularGetRequestBody from '../templates/core/angular/getRequestBody.hbs';
+import angularGetResponseBody from '../templates/core/angular/getResponseBody.hbs';
+import angularGetResponseHeader from '../templates/core/angular/getResponseHeader.hbs';
+import angularRequest from '../templates/core/angular/request.hbs';
+import angularSendRequest from '../templates/core/angular/sendRequest.hbs';
 import templateCoreApiError from '../templates/core/ApiError.hbs';
 import templateCoreApiRequestOptions from '../templates/core/ApiRequestOptions.hbs';
 import templateCoreApiResult from '../templates/core/ApiResult.hbs';
+import axiosGetHeaders from '../templates/core/axios/getHeaders.hbs';
+import axiosGetRequestBody from '../templates/core/axios/getRequestBody.hbs';
+import axiosGetResponseBody from '../templates/core/axios/getResponseBody.hbs';
+import axiosGetResponseHeader from '../templates/core/axios/getResponseHeader.hbs';
+import axiosRequest from '../templates/core/axios/request.hbs';
+import axiosSendRequest from '../templates/core/axios/sendRequest.hbs';
+import templateCoreBaseHttpRequest from '../templates/core/BaseHttpRequest.hbs';
+import templateCancelablePromise from '../templates/core/CancelablePromise.hbs';
 import fetchGetHeaders from '../templates/core/fetch/getHeaders.hbs';
 import fetchGetRequestBody from '../templates/core/fetch/getRequestBody.hbs';
 import fetchGetResponseBody from '../templates/core/fetch/getResponseBody.hbs';
 import fetchGetResponseHeader from '../templates/core/fetch/getResponseHeader.hbs';
 import fetchRequest from '../templates/core/fetch/request.hbs';
 import fetchSendRequest from '../templates/core/fetch/sendRequest.hbs';
-import fetchResponseType from '../templates/core/fetch/responseType.hbs';
-import functionCatchErrors from '../templates/core/functions/catchErrors.hbs';
+import functionBase64 from '../templates/core/functions/base64.hbs';
+import functionCatchErrorCodes from '../templates/core/functions/catchErrorCodes.hbs';
 import functionGetFormData from '../templates/core/functions/getFormData.hbs';
 import functionGetQueryString from '../templates/core/functions/getQueryString.hbs';
 import functionGetUrl from '../templates/core/functions/getUrl.hbs';
-import functionIsBinary from '../templates/core/functions/isBinary.hbs';
 import functionIsBlob from '../templates/core/functions/isBlob.hbs';
 import functionIsDefined from '../templates/core/functions/isDefined.hbs';
+import functionIsFormData from '../templates/core/functions/isFormData.hbs';
 import functionIsString from '../templates/core/functions/isString.hbs';
 import functionIsStringWithValue from '../templates/core/functions/isStringWithValue.hbs';
 import functionIsSuccess from '../templates/core/functions/isSuccess.hbs';
 import functionResolve from '../templates/core/functions/resolve.hbs';
+import templateCoreHttpRequest from '../templates/core/HttpRequest.hbs';
 import nodeGetHeaders from '../templates/core/node/getHeaders.hbs';
 import nodeGetRequestBody from '../templates/core/node/getRequestBody.hbs';
 import nodeGetResponseBody from '../templates/core/node/getResponseBody.hbs';
@@ -42,6 +59,7 @@ import templateExportSchema from '../templates/exportSchema.hbs';
 import templateExportService from '../templates/exportService.hbs';
 import templateIndex from '../templates/index.hbs';
 import partialBase from '../templates/partials/base.hbs';
+import partialExportComposition from '../templates/partials/exportComposition.hbs';
 import partialExportEnum from '../templates/partials/exportEnum.hbs';
 import partialExportInterface from '../templates/partials/exportInterface.hbs';
 import partialExportType from '../templates/partials/exportType.hbs';
@@ -71,6 +89,7 @@ import { registerHandlebarHelpers } from './registerHandlebarHelpers';
 
 export interface Templates {
     index: Handlebars.TemplateDelegate;
+    client: Handlebars.TemplateDelegate;
     exports: {
         model: Handlebars.TemplateDelegate;
         schema: Handlebars.TemplateDelegate;
@@ -81,7 +100,10 @@ export interface Templates {
         apiError: Handlebars.TemplateDelegate;
         apiRequestOptions: Handlebars.TemplateDelegate;
         apiResult: Handlebars.TemplateDelegate;
+        cancelablePromise: Handlebars.TemplateDelegate;
         request: Handlebars.TemplateDelegate;
+        baseHttpRequest: Handlebars.TemplateDelegate;
+        httpRequest: Handlebars.TemplateDelegate;
     };
 }
 
@@ -89,12 +111,17 @@ export interface Templates {
  * Read all the Handlebar templates that we need and return on wrapper object
  * so we can easily access the templates in out generator / write functions.
  */
-export function registerHandlebarTemplates(): Templates {
-    registerHandlebarHelpers();
+export const registerHandlebarTemplates = (root: {
+    httpClient: HttpClient;
+    useOptions: boolean;
+    useUnionTypes: boolean;
+}): Templates => {
+    registerHandlebarHelpers(root);
 
     // Main templates (entry points for the files we write to disk)
     const templates: Templates = {
         index: Handlebars.template(templateIndex),
+        client: Handlebars.template(templateClient),
         exports: {
             model: Handlebars.template(templateExportModel),
             schema: Handlebars.template(templateExportSchema),
@@ -105,13 +132,17 @@ export function registerHandlebarTemplates(): Templates {
             apiError: Handlebars.template(templateCoreApiError),
             apiRequestOptions: Handlebars.template(templateCoreApiRequestOptions),
             apiResult: Handlebars.template(templateCoreApiResult),
+            cancelablePromise: Handlebars.template(templateCancelablePromise),
             request: Handlebars.template(templateCoreRequest),
+            baseHttpRequest: Handlebars.template(templateCoreBaseHttpRequest),
+            httpRequest: Handlebars.template(templateCoreHttpRequest),
         },
     };
 
     // Partials for the generations of the models, services, etc.
     Handlebars.registerPartial('exportEnum', Handlebars.template(partialExportEnum));
     Handlebars.registerPartial('exportInterface', Handlebars.template(partialExportInterface));
+    Handlebars.registerPartial('exportComposition', Handlebars.template(partialExportComposition));
     Handlebars.registerPartial('exportType', Handlebars.template(partialExportType));
     Handlebars.registerPartial('header', Handlebars.template(partialHeader));
     Handlebars.registerPartial('isNullable', Handlebars.template(partialIsNullable));
@@ -138,16 +169,17 @@ export function registerHandlebarTemplates(): Templates {
     Handlebars.registerPartial('base', Handlebars.template(partialBase));
 
     // Generic functions used in 'request' file @see src/templates/core/request.hbs for more info
-    Handlebars.registerPartial('functions/catchErrors', Handlebars.template(functionCatchErrors));
+    Handlebars.registerPartial('functions/catchErrorCodes', Handlebars.template(functionCatchErrorCodes));
     Handlebars.registerPartial('functions/getFormData', Handlebars.template(functionGetFormData));
     Handlebars.registerPartial('functions/getQueryString', Handlebars.template(functionGetQueryString));
     Handlebars.registerPartial('functions/getUrl', Handlebars.template(functionGetUrl));
-    Handlebars.registerPartial('functions/isBinary', Handlebars.template(functionIsBinary));
     Handlebars.registerPartial('functions/isBlob', Handlebars.template(functionIsBlob));
     Handlebars.registerPartial('functions/isDefined', Handlebars.template(functionIsDefined));
+    Handlebars.registerPartial('functions/isFormData', Handlebars.template(functionIsFormData));
     Handlebars.registerPartial('functions/isString', Handlebars.template(functionIsString));
     Handlebars.registerPartial('functions/isStringWithValue', Handlebars.template(functionIsStringWithValue));
     Handlebars.registerPartial('functions/isSuccess', Handlebars.template(functionIsSuccess));
+    Handlebars.registerPartial('functions/base64', Handlebars.template(functionBase64));
     Handlebars.registerPartial('functions/resolve', Handlebars.template(functionResolve));
 
     // Specific files for the fetch client implementation
@@ -177,5 +209,21 @@ export function registerHandlebarTemplates(): Templates {
     Handlebars.registerPartial('node/request', Handlebars.template(nodeRequest));
     Handlebars.registerPartial('node/responseType', Handlebars.template(nodeResponseType));
 
+    // Specific files for the axios client implementation
+    Handlebars.registerPartial('axios/getHeaders', Handlebars.template(axiosGetHeaders));
+    Handlebars.registerPartial('axios/getRequestBody', Handlebars.template(axiosGetRequestBody));
+    Handlebars.registerPartial('axios/getResponseBody', Handlebars.template(axiosGetResponseBody));
+    Handlebars.registerPartial('axios/getResponseHeader', Handlebars.template(axiosGetResponseHeader));
+    Handlebars.registerPartial('axios/sendRequest', Handlebars.template(axiosSendRequest));
+    Handlebars.registerPartial('axios/request', Handlebars.template(axiosRequest));
+
+    // Specific files for the angular client implementation
+    Handlebars.registerPartial('angular/getHeaders', Handlebars.template(angularGetHeaders));
+    Handlebars.registerPartial('angular/getRequestBody', Handlebars.template(angularGetRequestBody));
+    Handlebars.registerPartial('angular/getResponseBody', Handlebars.template(angularGetResponseBody));
+    Handlebars.registerPartial('angular/getResponseHeader', Handlebars.template(angularGetResponseHeader));
+    Handlebars.registerPartial('angular/sendRequest', Handlebars.template(angularSendRequest));
+    Handlebars.registerPartial('angular/request', Handlebars.template(angularRequest));
+
     return templates;
-}
+};

@@ -1,31 +1,15 @@
-import * as yaml from 'js-yaml';
-import * as path from 'path';
+import RefParser from '@apidevtools/json-schema-ref-parser';
+import { resolve } from 'path';
 
-import { readSpec } from './readSpec';
+import { exists } from './fileSystem';
 
 /**
  * Load and parse te open api spec. If the file extension is ".yml" or ".yaml"
- * we will try to parse the file as a YAML spec, otherwise we will fallback
+ * we will try to parse the file as a YAML spec, otherwise we will fall back
  * on parsing the file as JSON.
- * @param input
+ * @param location: Path or url
  */
-export async function getOpenApiSpec(input: string): Promise<any> {
-    const extension = path.extname(input).toLowerCase();
-    const content = await readSpec(input);
-    switch (extension) {
-        case '.yml':
-        case '.yaml':
-            try {
-                return yaml.safeLoad(content);
-            } catch (e) {
-                throw new Error(`Could not parse OpenApi YAML: "${input}"`);
-            }
-
-        default:
-            try {
-                return JSON.parse(content);
-            } catch (e) {
-                throw new Error(`Could not parse OpenApi JSON: "${input}"`);
-            }
-    }
-}
+export const getOpenApiSpec = async (location: string): Promise<any> => {
+    const absolutePathOrUrl = (await exists(location)) ? resolve(location) : location;
+    return await RefParser.bundle(absolutePathOrUrl, absolutePathOrUrl, {});
+};

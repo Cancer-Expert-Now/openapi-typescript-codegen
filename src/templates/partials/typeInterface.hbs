@@ -1,12 +1,21 @@
 {{~#if properties~}}
 {
 {{#each properties}}
-{{#if description}}
+{{#ifdef description deprecated}}
 /**
- * {{{description}}}
- */
+{{#if description}}
+ * {{{escapeComment description}}}
 {{/if}}
-{{>isReadOnly}}{{{name}}}{{>isRequired}}: {{>type}},
+{{#if deprecated}}
+ * @deprecated
+{{/if}}
+ */
+{{/ifdef}}
+{{#if ../parent}}
+{{>isReadOnly}}{{{name}}}{{>isRequired}}: {{>type parent=../parent}};
+{{else}}
+{{>isReadOnly}}{{{name}}}{{>isRequired}}: {{>type}};
+{{/if}}
 {{/each}}
 }{{>isNullable}}
 {{~else~}}
