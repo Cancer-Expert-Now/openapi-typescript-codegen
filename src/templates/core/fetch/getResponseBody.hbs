@@ -2,10 +2,18 @@ async function getResponseBody(response: Response): Promise<any> {
     try {
         const contentType = response.headers.get('Content-Type');
         if (contentType) {
+
             const isJSON = contentType.toLowerCase().startsWith('application/json');
+            const isExcel = contentType.toLowerCase() === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+            const isDoc = contentType.toLowerCase() === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+
             if (isJSON) {
                 return await response.json();
-            } else {
+            }
+            else if (isExcel || isDoc) {
+                return await response.arrayBuffer();
+                 }
+             else {
                 return await response.text();
             }
         }
