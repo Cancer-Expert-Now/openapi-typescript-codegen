@@ -2,18 +2,9 @@ async function getResponseBody(response: Response): Promise<any> {
     try {
         const contentType = response.headers.get('Content-Type');
         if (contentType) {
-
-            const jsonTypes = ['application/json', 'application/problem+json']
-            const isJSON = jsonTypes.some(type => contentType.toLowerCase().startsWith(type));
-
-            //Check for the blob types
-            const blobTypes = ['application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']
-            const isBlob = blobTypes.some(type => contentType.toLowerCase().startsWith(type));
-
+            const isJSON = contentType.toLowerCase().startsWith('application/json');
             if (isJSON) {
-              return await response.json();
-            } else if (isBlob) { 
-              return await response.arrayBuffer();
+                return await response.json();
             } else {
                 return await response.text();
             }
