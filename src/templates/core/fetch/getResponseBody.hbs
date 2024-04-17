@@ -1,6 +1,8 @@
 async function getResponseBody(response: Response): Promise<any> {
     try {
         const contentType = response.headers.get('Content-Type');
+        const contentDisposition = response.headers.get('Content-Disposition');
+
         if (contentType) {
 
             const jsonTypes = ['application/json', 'application/problem+json']
@@ -12,9 +14,15 @@ async function getResponseBody(response: Response): Promise<any> {
 
             if (isJSON) {
               return await response.json();
-            } else if (isBlob) { 
-              return await response.arrayBuffer();
-            } else {
+            }else if (isBlob) { 
+                const arrayBuffer = await response.arrayBuffer();
+  
+                if(contentDisposition) {
+                  return [contentDisposition, arrayBuffer];
+                } else {
+                  return arrayBuffer;
+                }
+              } else {
                 return await response.text();
             }
         }
