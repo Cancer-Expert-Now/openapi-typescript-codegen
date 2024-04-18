@@ -11,6 +11,7 @@ async function getResponseBody(response: Response): Promise<any> {
             //Check for the blob types
             const blobTypes = ['application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']
             const isBlob = blobTypes.some(type => contentType.toLowerCase().startsWith(type));
+           
 
             if (isJSON) {
               return await response.json();
