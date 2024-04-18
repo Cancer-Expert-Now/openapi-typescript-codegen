@@ -3,6 +3,8 @@ async function getResponseBody(response: Response): Promise<any> {
         const contentType = response.headers.get('Content-Type');
         const contentDisposition = response.headers.get('Content-Disposition');
 
+
+
         if (contentType) {
 
             const jsonTypes = ['application/json', 'application/problem+json']
