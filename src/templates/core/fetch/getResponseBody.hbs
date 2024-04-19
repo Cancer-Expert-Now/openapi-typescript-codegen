@@ -2,7 +2,11 @@ async function getResponseBody(response: Response): Promise<any> {
     try {
         const contentType = response.headers.get('Content-Type');
         const contentDisposition = response.headers.get('Content-Disposition');
-
+        console.log(contentDisposition, 'current dispostion header');
+        for(let item of response.headers) {
+          console.log(item, 'available headers');
+        }
+        
         if (contentType) {
 
             const jsonTypes = ['application/json', 'application/problem+json']
