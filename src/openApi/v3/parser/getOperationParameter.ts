@@ -41,18 +41,6 @@ export function getOperationParameter(openApi: OpenApi, parameter: OpenApiParame
 
     if (parameter.schema) {
         if (parameter.schema.$ref) {
-            const schemaKey = parameter.schema.$ref.split('/').pop() || '';
-            const refSchema = openApi?.components?.schemas?.[schemaKey] as any;
-            const refSchemaDefault = refSchema?.default;
-            if (refSchemaDefault !== undefined && refSchema?.enum) {
-                const enumVals = (refSchema.enum as string[]).map((v: string) => `'${v}'`).join(' | ');
-                operationParameter.export = 'generic';
-                operationParameter.type = enumVals;
-                operationParameter.base = enumVals;
-                operationParameter.template = null;
-                operationParameter.default = `'${refSchemaDefault}'`;
-                return operationParameter;
-            }
             const model = getType(parameter.schema.$ref);
             operationParameter.export = 'reference';
             operationParameter.type = model.type;
